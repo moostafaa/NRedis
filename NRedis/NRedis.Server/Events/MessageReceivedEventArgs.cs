@@ -1,6 +1,6 @@
-﻿namespace NRedis.Server.EventsArgs
+﻿namespace NRedis.Server.Events
 {
-    public class MessageReceivedEventArgs : EventArgs
+    public class MessageReceivedEventArgs : System.EventArgs
     {
         public string ClientId { get; set; }
         public string[] Command { get; set; }

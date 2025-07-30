@@ -6,7 +6,7 @@ namespace NRedis.Server
     {
         static async Task Main(string[] args)
         {
-            var commandProcessor = new RedisCommandProcessor(null);
+            IRedisCommandProcessor commandProcessor = null;
             var server = new RedisTcpServer(6379, commandProcessor);
 
             // Subscribe to events

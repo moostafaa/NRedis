@@ -1,4 +1,6 @@
-﻿/// <summary>
+﻿namespace NRedis.Core.Common;
+
+/// <summary>
 /// Defines the underlying memory encoding for a RedisObject.
 /// This is the key to Redis's performance and memory efficiency.
 /// </summary>

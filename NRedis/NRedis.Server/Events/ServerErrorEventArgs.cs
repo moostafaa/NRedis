@@ -1,6 +1,6 @@
-﻿namespace NRedis.Server.EventsArgs
+﻿namespace NRedis.Server.Events
 {
-    public class ServerErrorEventArgs : EventArgs
+    public class ServerErrorEventArgs : System.EventArgs
     {
         public Exception Exception { get; set; }
         public string Context { get; set; }

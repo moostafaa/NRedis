@@ -1,4 +1,4 @@
-﻿using NRedis.Server.EventsArgs;
+﻿using NRedis.Server.Events;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
@@ -90,7 +90,7 @@ namespace NRedis.Server.Server
                 _listener?.Stop();
 
                 // Disconnect all clients
-                var disconnectTasks = _clients.Values.Select(DisconnectClientAsync);
+                var disconnectTasks = _clients.Values.Select(x => DisconnectClientAsync(x));
                 await Task.WhenAll(disconnectTasks);
 
                 // Wait for server task to complete
@@ -265,80 +265,80 @@ namespace NRedis.Server.Server
             return sb.ToString();
         }
 
-        private string FormatSortedSetResponse(List<SortedSetItem> items)
-        {
-            if (items == null || items.Count == 0)
-                return "*0\r\n";
+        //private string FormatSortedSetResponse(List<SortedSetItem> items)
+        //{
+        //    if (items == null || items.Count == 0)
+        //        return "*0\r\n";
 
-            var sb = new StringBuilder();
-            sb.AppendLine($"*{items.Count * 2}"); // Each item has value and score
+        //    var sb = new StringBuilder();
+        //    sb.AppendLine($"*{items.Count * 2}"); // Each item has value and score
 
-            foreach (var item in items)
-            {
-                sb.AppendLine($"${item.Value.Length}");
-                sb.AppendLine(item.Value);
-                var scoreStr = item.Score.ToString();
-                sb.AppendLine($"${scoreStr.Length}");
-                sb.AppendLine(scoreStr);
-            }
+        //    foreach (var item in items)
+        //    {
+        //        sb.AppendLine($"${item.Value.Length}");
+        //        sb.AppendLine(item.Value);
+        //        var scoreStr = item.Score.ToString();
+        //        sb.AppendLine($"${scoreStr.Length}");
+        //        sb.AppendLine(scoreStr);
+        //    }
 
-            return sb.ToString();
-        }
+        //    return sb.ToString();
+        //}
 
-        private string FormatStreamResponse(List<StreamEntry> entries)
-        {
-            if (entries == null || entries.Count == 0)
-                return "*0\r\n";
+        //private string FormatStreamResponse(List<StreamEntry> entries)
+        //{
+        //    if (entries == null || entries.Count == 0)
+        //        return "*0\r\n";
 
-            var sb = new StringBuilder();
-            sb.AppendLine($"*{entries.Count}");
+        //    var sb = new StringBuilder();
+        //    sb.AppendLine($"*{entries.Count}");
 
-            foreach (var entry in entries)
-            {
-                sb.AppendLine($"*{2 + entry.Fields.Count * 2}"); // ID + field count * 2
-                sb.AppendLine($"${entry.Id.Length}");
-                sb.AppendLine(entry.Id);
+        //    foreach (var entry in entries)
+        //    {
+        //        sb.AppendLine($"*{2 + entry.Fields.Count * 2}"); // ID + field count * 2
+        //        sb.AppendLine($"${entry.Id.Length}");
+        //        sb.AppendLine(entry.Id);
 
-                foreach (var field in entry.Fields)
-                {
-                    sb.AppendLine($"${field.Key.Length}");
-                    sb.AppendLine(field.Key);
-                    sb.AppendLine($"${field.Value.Length}");
-                    sb.AppendLine(field.Value);
-                }
-            }
+        //        foreach (var field in entry.Fields)
+        //        {
+        //            sb.AppendLine($"${field.Key.Length}");
+        //            sb.AppendLine(field.Key);
+        //            sb.AppendLine($"${field.Value.Length}");
+        //            sb.AppendLine(field.Value);
+        //        }
+        //    }
 
-            return sb.ToString();
-        }
+        //    return sb.ToString();
+        //}
 
-        private string FormatTransactionResponse(List<object> results)
-        {
-            if (results == null)
-                return "*-1\r\n"; // Transaction aborted
+        //private string FormatTransactionResponse(List<object> results)
+        //{
+        //    if (results == null)
+        //        return "*-1\r\n"; // Transaction aborted
 
-            var sb = new StringBuilder();
-            sb.AppendLine($"*{results.Count}");
+        //    var sb = new StringBuilder();
+        //    sb.AppendLine($"*{results.Count}");
 
-            foreach (var result in results)
-            {
-                if (result is RedisResponse redisResp)
-                {
-                    sb.Append(FormatRedisResponse(redisResp));
-                }
-                else if (result is Exception ex)
-                {
-                    sb.AppendLine($"-ERR {ex.Message}");
-                }
-                else
-                {
-                    var str = result?.ToString() ?? "";
-                    sb.AppendLine($"${str.Length}");
-                    sb.AppendLine(str);
-                }
-            }
+        //    foreach (var result in results)
+        //    {
+        //        if (result is RedisResponse redisResp)
+        //        {
+        //            sb.Append(FormatRedisResponse(redisResp));
+        //        }
+        //        else if (result is Exception ex)
+        //        {
+        //            sb.AppendLine($"-ERR {ex.Message}");
+        //        }
+        //        else
+        //        {
+        //            var str = result?.ToString() ?? "";
+        //            sb.AppendLine($"${str.Length}");
+        //            sb.AppendLine(str);
+        //        }
+        //    }
 
-            return sb.ToString();
-        }
+        //    return sb.ToString();
+        //}
 
         private string FormatBulkResponse(Dictionary<string, string> values)
         {
