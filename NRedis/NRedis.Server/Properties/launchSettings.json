@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "NRedis.Server": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
