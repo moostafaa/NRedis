@@ -1,5 +1,7 @@
 ﻿using System.Text;
 
+namespace NRedis.Core.DataTypes;
+
 /// <summary>
 /// A C# implementation of Redis's Simple Dynamic String (sds).
 /// This is more efficient than native strings for frequent modifications
@@ -36,6 +38,27 @@ public class Sds : IComparable<Sds>, IEquatable<Sds>
         _length += other._length;
     }
 
+    public void Trim(int start, int end)
+    {
+        if (start < 0 || end >= _length || start > end)
+            throw new ArgumentOutOfRangeException();
+
+        int newLength = (end - start) + 1;
+        Buffer.BlockCopy(_buffer, start, _buffer, 0, newLength);
+        _length = newLength;
+    }
+
+    public Sds Range(int start, int end)
+    {
+        if (start < 0 || end >= _length || start > end)
+            throw new ArgumentOutOfRangeException();
+
+        int len = (end - start) + 1;
+        var newBytes = new byte[len];
+        Buffer.BlockCopy(_buffer, start, newBytes, 0, len);
+        return new Sds(newBytes);
+    }
+
     private void EnsureCapacity(int required)
     {
         if (required > Capacity)
@@ -54,8 +77,19 @@ public class Sds : IComparable<Sds>, IEquatable<Sds>
     }
 
     public int CompareTo(Sds other) => _buffer.AsSpan(0, _length).SequenceCompareTo(other._buffer.AsSpan(0, other._length));
-    public bool Equals(Sds other) => CompareTo(other) == 0;
-    public override int GetHashCode() => ToString().GetHashCode(); // Simple hash for demonstration
+    public bool Equals(Sds other) => other != null && _buffer.AsSpan(0, _length).SequenceEqual(other._buffer.AsSpan(0, other._length));
+    public override int GetHashCode()
+    {
+        // FNV-1a hash algorithm for byte arrays
+        const int fnvPrime = 16777619;
+        int hash = -2128831035; // FNV offset basis
+        for (int i = 0; i < _length; i++)
+        {
+            hash ^= _buffer[i];
+            hash *= fnvPrime;
+        }
+        return hash;
+    }
     public override bool Equals(object obj) => obj is Sds other && Equals(other);
 
     private static int GetNextPowerOfTwo(int v)
